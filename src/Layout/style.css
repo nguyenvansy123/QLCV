@@ -1,0 +1,24 @@
+#sidebar{
+    width: 100%;
+}
+
+#sidebar ul li{
+    width: 180px;
+    height: 50px;
+    list-style: none;
+    color: white;
+    background-color: #008ddf;
+    margin-top: 20px;
+    display:flex ;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+#sidebar ul li a{
+    color: white;
+}
+
+
+#sidebar ul li.active{
+    background-color: orangered;
+}
