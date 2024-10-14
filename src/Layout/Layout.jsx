@@ -8,10 +8,10 @@ import './style.css'
 export const Layout = () => {
     return (
         <Grid container spacing={2}>
-            <Grid size={3}>
+            <Grid size={2}>
                <Sidebar></Sidebar>
             </Grid>
-            <Grid size={9}>
+            <Grid size={10}>
                 <Main></Main>
             </Grid>
         </Grid>

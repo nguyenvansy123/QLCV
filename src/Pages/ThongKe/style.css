@@ -1,0 +1,7 @@
+#thongke h2 {
+    text-align: center;
+}
+
+#thongke table,#thongke td, #thongke th{
+    border: 1px solid;
+}
