@@ -6,7 +6,7 @@ export const Sidebar = () => {
         <div id='sidebar'>
             <ul>
                 <li><NavLink className="nav-link" to="/">Thống kê</NavLink></li>
-                <li><a href="#">Quy trình mẫu</a></li>
+                <li><NavLink className="nav-link" to="/quytrinhmau">Quy trình mẫu</NavLink></li>
                 <li><a href="#">Hành chính</a></li>
                 <li><a href="#">Chuyên môn</a></li>
                 <li><a href="#">NCKH</a></li>

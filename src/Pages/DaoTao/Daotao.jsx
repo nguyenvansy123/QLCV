@@ -1,165 +1,308 @@
-import React, { useState, useEffect } from "react";
-import { FaCheckCircle, FaTrash } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Container,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Tab,
+  Tabs
+} from "@mui/material";
+import Grid from '@mui/material/Grid2';
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
+import { FaEdit, FaTrash, FaCheckCircle } from "react-icons/fa";
 
 export const Daotao = () => {
+  const [taskName, setTaskName] = useState("");
+  const [assignee, setAssignee] = useState("");
+  const [dueDate, setDueDate] = useState(null);
+  const [creationDate] = useState(dayjs());
   const [tasks, setTasks] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
-  const [taskDescription, setTaskDescription] = useState("");
-  const [dueDate, setDueDate] = useState(null);
-  const [error, setError] = useState("");
+  const [editingTask, setEditingTask] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
-  useEffect(() => {
-    if (taskDescription.trim() !== "") {
-      setError("");
-    }
-  }, [taskDescription]);
+  const handleTaskNameChange = (event) => {
+    setTaskName(event.target.value);
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (taskDescription.trim() === "") {
-      setError("Task description cannot be empty");
-      return;
-    }
+  const handleAssigneeChange = (event) => {
+    setAssignee(event.target.value);
+  };
+
+  const handleDueDateChange = (date) => {
+    setDueDate(date);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
     const newTask = {
       id: Date.now(),
-      description: taskDescription,
-      dueDate: dueDate,
-      completed: false,
+      taskName,
+      assignee,
+      dueDate: dueDate ? dueDate.format("YYYY-MM-DD") : null,
+      creationDate: creationDate.format("YYYY-MM-DD"),
+      status: "Đang làm"
     };
     setTasks([...tasks, newTask]);
-    setTaskDescription("");
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setTaskName("");
+    setAssignee("");
     setDueDate(null);
   };
 
-  const handleComplete = (id) => {
-    const completedTask = tasks.find((task) => task.id === id);
-    if (completedTask) {
-      completedTask.completed = true;
-      setCompletedTasks([...completedTasks, completedTask]);
-      setTasks(tasks.filter((task) => task.id !== id));
-    }
+  const handleEditClick = (task) => {
+    setEditingTask(task);
+    setTaskName(task.taskName);
+    setAssignee(task.assignee);
+    setDueDate(dayjs(task.dueDate));
+    setOpenDialog(true);
   };
 
-  const clearCompletedTasks = () => {
-    setCompletedTasks([]);
+  const handleDeleteClick = (taskId) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
   };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    resetForm();
+    setEditingTask(null);
+  };
+
+  const handleUpdateTask = () => {
+    const updatedTasks = tasks.map(task =>
+      task.id === editingTask.id
+        ? {
+          ...task,
+          taskName,
+          assignee,
+          dueDate: dueDate ? dueDate.format("YYYY-MM-DD") : null
+        }
+        : task
+    );
+    setTasks(updatedTasks);
+    handleDialogClose();
+  };
+
+  const handleCompleteTask = (task) => {
+    const completedTask = { ...task, status: "Hoàn thành", completionDate: dayjs().format("YYYY-MM-DD") };
+    setCompletedTasks([...completedTasks, completedTask]);
+    setTasks(tasks.filter(t => t.id !== task.id));
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 p-8 flex flex-col items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Task Manager
-        </h1>
-        <form onSubmit={handleSubmit} className="mb-6">
-          <div className="mb-4">
-            <label
-              htmlFor="taskDescription"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Task Description
-            </label>
-            <input
-              type="text"
-              id="taskDescription"
-              value={taskDescription}
-              onChange={(e) => setTaskDescription(e.target.value)}
-              className={`w-full px-3 py-2 border ${error ? "border-red-500" : "border-gray-300"} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              placeholder="Enter task description"
-              aria-label="Task Description"
-            />
-            {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="dueDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Due Date
-            </label>
-            <DatePicker
-              id="dueDate"
-              selected={dueDate}
-              onChange={(date) => setDueDate(date)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholderText="Select due date"
-              aria-label="Due Date"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Add Task
-          </button>
-        </form>
-
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-3 text-gray-800">Tasks</h2>
-          <AnimatePresence>
-            {tasks.map((task) => (
-              <motion.div
-                key={task.id}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex items-center justify-between bg-gray-100 p-3 rounded-md mb-2"
-              >
-                <span className="text-gray-800">{task.description}</span>
-                <div className="flex items-center">
-                  {task.dueDate && (
-                    <span className="text-sm text-gray-500 mr-2">
-                      {task.dueDate.toLocaleDateString()}
-                    </span>
-                  )}
-                  <button
-                    onClick={() => handleComplete(task.id)}
-                    className="text-green-500 hover:text-green-600 focus:outline-none"
-                    aria-label="Complete task"
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Container maxWidth="md">
+        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Tạo Nhiệm Vụ Mới
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="taskName"
+                  label="Tên Nhiệm Vụ"
+                  name="taskName"
+                  value={taskName}
+                  onChange={handleTaskNameChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <InputLabel id="assignee-label">Người Làm</InputLabel>
+                  <Select
+                    labelId="assignee-label"
+                    id="assignee"
+                    value={assignee}
+                    label="Người Làm"
+                    onChange={handleAssigneeChange}
                   >
-                    <FaCheckCircle size={20} />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {completedTasks.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-3 text-gray-800">
-              Completed Tasks
-            </h2>
-            <AnimatePresence>
-              {completedTasks.map((task) => (
-                <motion.div
-                  key={task.id}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="flex items-center justify-between bg-gray-200 p-3 rounded-md mb-2"
+                    <MenuItem value="Người 1">Người 1</MenuItem>
+                    <MenuItem value="Người 2">Người 2</MenuItem>
+                    <MenuItem value="Người 3">Người 3</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <DatePicker
+                  label="Ngày Hoàn Thành"
+                  value={dueDate}
+                  onChange={handleDueDateChange}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  id="creationDate"
+                  label="Ngày Tạo"
+                  name="creationDate"
+                  value={creationDate.format("DD/MM/YYYY")}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
                 >
-                  <span className="text-gray-600 line-through">
-                    {task.description}
-                  </span>
-                  {task.dueDate && (
-                    <span className="text-sm text-gray-500">
-                      {task.dueDate.toLocaleDateString()}
-                    </span>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            <button
-              onClick={clearCompletedTasks}
-              className="w-full mt-4 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center"
-            >
-              <FaTrash className="mr-2" /> Clear Completed Tasks
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+                  Tạo Nhiệm Vụ
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+
+        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+          <Tabs value={tabValue} onChange={handleTabChange} centered>
+            <Tab label="Nhiệm Vụ Đang Làm" />
+            <Tab label="Nhiệm Vụ Đã Hoàn Thành" />
+          </Tabs>
+
+          {tabValue === 0 && (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Tên Nhiệm Vụ</TableCell>
+                    <TableCell>Người Làm</TableCell>
+                    <TableCell>Ngày Tạo</TableCell>
+                    <TableCell>Ngày Hoàn Thành</TableCell>
+                    <TableCell>Trạng Thái</TableCell>
+                    <TableCell>Hành Động</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tasks.map((task) => (
+                    <TableRow key={task.id}>
+                      <TableCell>{task.taskName}</TableCell>
+                      <TableCell>{task.assignee}</TableCell>
+                      <TableCell>{task.creationDate}</TableCell>
+                      <TableCell>{task.dueDate}</TableCell>
+                      <TableCell>{task.status}</TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => handleEditClick(task)} color="primary">
+                          <FaEdit />
+                        </IconButton>
+                        <IconButton onClick={() => handleDeleteClick(task.id)} color="error">
+                          <FaTrash />
+                        </IconButton>
+                        <IconButton onClick={() => handleCompleteTask(task)} color="success">
+                          <FaCheckCircle />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
+          {tabValue === 1 && (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Tên Nhiệm Vụ</TableCell>
+                    <TableCell>Người Làm</TableCell>
+                    <TableCell>Ngày Tạo</TableCell>
+                    <TableCell>Ngày Hoàn Thành</TableCell>
+                    <TableCell>Ngày Hoàn Thành Thực Tế</TableCell>
+                    <TableCell>Trạng Thái</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {completedTasks.map((task) => (
+                    <TableRow key={task.id}>
+                      <TableCell>{task.taskName}</TableCell>
+                      <TableCell>{task.assignee}</TableCell>
+                      <TableCell>{task.creationDate}</TableCell>
+                      <TableCell>{task.dueDate}</TableCell>
+                      <TableCell>{task.completionDate}</TableCell>
+                      <TableCell>{task.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
+
+        <Dialog open={openDialog} onClose={handleDialogClose}>
+          <DialogTitle>Chỉnh Sửa Nhiệm Vụ</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="editTaskName"
+              label="Tên Nhiệm Vụ"
+              type="text"
+              fullWidth
+              variant="standard"
+              value={taskName}
+              onChange={handleTaskNameChange}
+            />
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel id="edit-assignee-label">Người Làm</InputLabel>
+              <Select
+                labelId="edit-assignee-label"
+                id="editAssignee"
+                value={assignee}
+                label="Người Làm"
+                onChange={handleAssigneeChange}
+              >
+                <MenuItem value="Người 1">Người 1</MenuItem>
+                <MenuItem value="Người 2">Người 2</MenuItem>
+                <MenuItem value="Người 3">Người 3</MenuItem>
+              </Select>
+            </FormControl>
+            <DatePicker
+              label="Ngày Hoàn Thành"
+              value={dueDate}
+              onChange={handleDueDateChange}
+              renderInput={(params) => <TextField {...params} fullWidth sx={{ mt: 2 }} />}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleDialogClose}>Hủy</Button>
+            <Button onClick={handleUpdateTask}>Cập Nhật</Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </LocalizationProvider>
   )
 }

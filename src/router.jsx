@@ -3,6 +3,7 @@ import App from "./App";
 import { Layout } from "./Layout/Layout";
 import { Thongke } from "./Pages/ThongKe/Thongke";
 import { Daotao } from "./Pages/DaoTao/Daotao";
+import { Quytrinhmau } from "./Pages/QuytrinhMau/Quytrinhmau";
 
 
 // const router = createBrowserRouter([
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
         children:[
             { index: true, element: <Thongke /> },
             { path: "daotao", element: <Daotao /> },
+            {path:"quytrinhmau",element:<Quytrinhmau/>}
         ]
     }
 
